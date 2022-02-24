@@ -1,0 +1,28 @@
+name: 'RSS-Check'
+
+on:
+  - push
+  - pull_request
+  
+jobs:
+  build:
+    runs-on: "ubuntu-latest"
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      name: 'setup node'
+      with:
+        node-version: '16.x'
+
+    - name: install and build
+      run: |
+        make install
+        make build
+      env:
+        CI: true
+
+    - name: Run linter
+      run: make lint
+
+    - name: Run tests
+      run: make test
