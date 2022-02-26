@@ -14,15 +14,11 @@ jobs:
       with:
         node-version: '16.x'
 
-    - name: install and build
+    - name: install
       run: |
         make install
-        make build
       env:
         CI: true
 
     - name: Run linter
       run: make lint
-
-    - name: Run tests
-      run: make test
