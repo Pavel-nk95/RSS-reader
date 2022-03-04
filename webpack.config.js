@@ -3,9 +3,9 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-module.exports = {
+const config = {
   mode: process.env.NODE_ENV || 'development',
-  entry: './src/app.js',
+  entry: path.resolve(__dirname, './src/app.js'),
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, './dist'),
@@ -32,3 +32,5 @@ module.exports = {
     new CleanWebpackPlugin(),
   ],
 };
+
+module.exports = config;

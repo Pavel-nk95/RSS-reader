@@ -16,7 +16,8 @@
       <form action="" class="rss-form text-body">
         <div class="row">
           <div class="col">
-            <input id="url-input" name="url" aria-label="url" class="form-control form-control-lg w-100" placeholder="ссылка RSS" autocomplete="off">
+            <input id="url-input" autofocus="" required="" name="url" aria-label="url" class="form-control form-control-lg w-100"
+              placeholder="ссылка RSS" autocomplete="off">
             <label class="visually-hidden" for="url-input">Ссылка RSS</label>
           </div>
           <div class="col-auto">
@@ -24,8 +25,8 @@
           </div>
         </div>
       </form>
-      <p class="mt-2 mb-0 text-muted">Пример: <a href="https://ru.hexlet.io/lessons.rss"
-          target="blank">https://ru.hexlet.io/lessons.rss</a></p>
+      <p class="mt-2 mb-0 text-muted">Пример: https://ru.hexlet.io/lessons.rss</p>
+      <p class="feedback m-0 position-absolute small"></p>
     </div>
   </header>
   <main class="main flex-grow-1">
@@ -36,3 +37,6 @@
 </body>
 
 </html>
+
+
+
