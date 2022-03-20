@@ -8,35 +8,34 @@
   <title>RSS агрегатор</title>
 </head>
 
-<body class="d-flex flex-column min-vh-100 justify-content-between">
-  <header class="container-fluid bg-dark p-5">
-    <div class="mx-auto text-white w-75">
-      <h1 class="title display-3 mb-0">RSS агрегатор</h1>
-      <p class="lead">Начните читать RSS сегодня! Это легко, это красиво.</p>
-      <form action="" class="rss-form text-body">
-        <div class="row">
-          <div class="col">
-            <input id="url-input" autofocus="" required="" name="url" aria-label="url" class="form-control form-control-lg w-100"
-              placeholder="ссылка RSS" autocomplete="off">
-            <label class="visually-hidden" for="url-input">Ссылка RSS</label>
+<body>
+  <div class="d-flex flex-column min-vh-100 justify-content-between">
+    <header class="container-fluid bg-dark p-5">
+      <div class="mx-auto text-white w-75">
+        <h1 class="title display-3 mb-0"></h1>
+        <p class="lead"></p>
+        <form action="" class="rss-form text-body">
+          <div class="row">
+            <div class="col">
+              <input id="url-input" autofocus="" required="" name="url" aria-label="url"
+                class="form-control form-control-lg w-100" autocomplete="off">
+              <label class="description visually-hidden" for="url-input"></label>
+            </div>
+            <div class="col-auto">
+              <button type="submit" aria-label="add" class="add btn btn-lg btn-primary"></button>
+            </div>
           </div>
-          <div class="col-auto">
-            <button type="submit" aria-label="add" class="btn btn-lg btn-primary">Добавить</button>
-          </div>
-        </div>
-      </form>
-      <p class="mt-2 mb-0 text-muted">Пример: https://ru.hexlet.io/lessons.rss</p>
-      <p class="feedback m-0 position-absolute small"></p>
-    </div>
-  </header>
-  <main class="main flex-grow-1">
-  </main>
-  <footer class="footer border-top py-3 mt-5 bg-light">
-    <p class="text-center">Created by Pavel_Nk</p>
-  </footer>
+        </form>
+        <p class="mt-2 mb-0 text-muted"></p>
+        <p class="feedback m-0 position-absolute small"></p>
+      </div>
+    </header>
+    <main class="main flex-grow-1">
+    </main>
+    <footer class="footer border-top py-3 mt-5 bg-light">
+      <p class="footer-content text-center"></p>
+    </footer>
+  </div>
 </body>
 
 </html>
-
-
-

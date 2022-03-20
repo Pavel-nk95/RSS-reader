@@ -1,45 +1,57 @@
-import './app.scss';
+import './styles/style.scss';
 import 'bootstrap/js/src/util/';
-import * as yup from 'yup';
 import onChange from 'on-change';
 import i18next from 'i18next';
+import * as yup from 'yup';
 import axios from 'axios';
-import render from './render.js';
+import ru from './locales/ru.js';
 import parser from './parser';
+import render from './view.js';
 
-i18next.init({
-  lng: 'ru',
-  debug: true,
+const defaultLanguage = 'ru';
+
+const i18nInstance = i18next.createInstance();
+
+i18nInstance.init({
+  lng: defaultLanguage,
+  debug: false,
   resources: {
-    ru: {
-      translation: {
-        error: {
-          unspecific: 'Что то пошло не так',
-          'RSS already exists': 'RSS уже существует',
-          'Resource does not contain valid rss': 'Ресурс не содержит валидный RSS',
-          'this must be a valid URL': 'Ссылка должна быть валидным URL',
-        },
-      },
-    },
+    ru,
   },
 });
 
 const elements = {
+  container: document.querySelector('div.d-flex'),
   form: document.querySelector('.rss-form'),
-  message: document.querySelector('.feedback'),
-  input: document.querySelector('#url-input'),
+  input: document.getElementById('url-input'),
+  main: document.querySelector('.main'),
+  title: document.querySelector('h1.title'),
+  description: document.querySelector('p.lead'),
+  label: document.querySelector('label.description'),
+  add: document.querySelector('button.add'),
+  example: document.querySelector('.text-muted'),
+  footerContent: document.querySelector('.footer-content'),
+  message: document.querySelector('p.feedback'),
 };
 
+elements.title.textContent = i18nInstance.t('static.title');
+elements.description.textContent = i18nInstance.t('static.description');
+elements.label.textContent = i18nInstance.t('static.label');
+elements.add.textContent = i18nInstance.t('buttons.add');
+elements.example.textContent = i18nInstance.t('static.example');
+elements.footerContent.textContent = i18nInstance.t('static.footerContent');
+elements.input.setAttribute('placeholder', i18nInstance.t('static.placeholder'));
+
 const state = onChange({
+  lng: defaultLanguage,
+  processState: 'waiting',
   links: [],
   feeds: [],
   posts: [],
-  form: {
-    valid: false,
-    error: '',
-    url: '',
-  },
-}, render(elements));
+  valid: false,
+  error: '',
+  url: '',
+}, render(elements, i18nInstance));
 
 const schema = yup.string().url().notOneOf(state.links);
 
@@ -50,19 +62,20 @@ elements.form.addEventListener('submit', (e) => {
   const formData = new FormData(e.target);
   const urlStr = formData.get('url');
 
-  validate(urlStr).then((link) => axios.get(`https://hexlet-allorigins.herokuapp.com/raw?url=${link}`))
-    .then((response) => Promise.resolve(parser(response)))
+  validate(urlStr).then((link) => axios.get(`https://allorigins.hexlet.app/get?url=${link}`))
+    .then((response) => Promise.resolve(parser(response, i18nInstance.t('errors.notContainValid'))))
     .then(() => {
       if (state.links.includes(urlStr)) {
-        throw new Error('RSS already exists');
+        throw new Error(i18nInstance.t('errors.alreadyExists'));
       }
+      state.valid = true;
       state.links.push(urlStr);
-      state.form.valid = true;
-      state.form.url = urlStr;
-      state.form.error = '';
+      state.url = urlStr;
+      state.error = '';
     })
     .catch((error) => {
-      state.form.valid = false;
-      state.form.error = i18next.t([`error.${error.message}`, 'error.unspecific']);
+      state.valid = false;
+      state.error = error.message === 'this must be a valid URL'
+        ? i18nInstance.t('errors.mustBeValid') : error.message;
     });
 });
