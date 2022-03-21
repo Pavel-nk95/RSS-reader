@@ -13,6 +13,18 @@
     overflow: hidden;
   }
 
+  a {
+    cursor: pointer;
+  }
+
   .footer {
     padding-bottom: 0 !important;
+  }
+
+  .posts, .feeds {
+    padding-left: 0;
+  }
+
+  .form-control, .add {
+    height: 3.5rem;
   }

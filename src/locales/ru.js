@@ -10,7 +10,7 @@ export default {
       posts: 'Посты',
     },
     errors: {
-      unspecific: 'Что то пошло не так',
+      unspecific: 'Неизвестная ошибка. Что-то пошло не так.',
       alreadyExists: 'RSS уже существует',
       notContainValid: 'Ресурс не содержит валидный RSS',
       mustBeValid: 'Ссылка должна быть валидным URL',
