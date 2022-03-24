@@ -11,6 +11,8 @@ import render from './view.js';
 
 const defaultLanguage = 'ru';
 
+const delay = 5000;
+
 const i18nInstance = i18next.createInstance();
 
 const { CancelToken } = axios;
@@ -55,11 +57,12 @@ elements.feedsTitle.textContent = i18nInstance.t('static.feeds');
 
 const state = onChange({
   lng: defaultLanguage,
-  processState: 'waiting',
   links: [],
   feeds: [],
   posts: [],
   valid: false,
+  idPostCount: 0,
+  idFeedCount: 0,
   error: '',
   url: '',
 }, render(elements, i18nInstance));
@@ -68,47 +71,70 @@ const schema = yup.string().url().notOneOf(state.links);
 
 const validate = (url) => schema.validate(url);
 
+const getData = (link) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(link)}`, {
+  cancelToken: source.token,
+  timeout: 10000,
+}).then((response) => {
+  if (response.statusText === 'OK') return Promise.resolve(parser(response, i18nInstance.t('errors.notContainValid')));
+  state.valid = false;
+  throw new Error(i18nInstance.t('errors.unspecific'));
+});
+
+const addIDs = (data, feedCount, postCount) => {
+  state.idFeedCount += feedCount;
+  const posts = data.posts.map((item) => {
+    state.idPostCount += postCount;
+    item.id = state.idPostCount;
+    item.feedId = state.idFeedCount;
+    return item;
+  });
+  if (feedCount >= 1) {
+    const [feed] = data.feed;
+    feed.id = state.idFeedCount;
+    return { feed, posts };
+  }
+  return { posts };
+};
+
+const addNewRSS = (link) => getData(link).then((data) => addIDs(data, 1, 1)).then((data) => {
+  if (state.links.includes(state.url)) {
+    throw new Error(i18nInstance.t('errors.alreadyExists'));
+  }
+  state.valid = true;
+  state.links.push(state.url);
+  state.feeds.push(data.feed);
+  state.posts.push(...data.posts);
+  state.error = '';
+  return data;
+});
+
 elements.form.addEventListener('submit', (e) => {
   e.preventDefault();
   const formData = new FormData(e.target);
   const urlStr = formData.get('url');
+  state.url = urlStr;
 
-  validate(urlStr).then((link) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${link}`, {
-    cancelToken: source.token,
-    timeout: 5000,
-  })).then((response) => {
-    if (response.statusText === 'OK') return Promise.resolve(parser(response, i18nInstance.t('errors.notContainValid')));
-    throw new Error(i18nInstance.t('errors.unspecific'));
-  }).then((data) => {
-    if (state.links.includes(urlStr)) {
-      throw new Error(i18nInstance.t('errors.alreadyExists'));
-    }
-
-    let count = 0;
-    const posts = data.posts.map((item) => {
-      count += 1;
-      item.id = count;
-      item.feedId = state.feeds.length + 1;
-      return item;
-    });
-
-    const [feed] = data.feed;
-    feed.id = state.feeds.length + 1;
-
-    state.feeds.push(feed);
-    state.posts.push(...posts);
-
-    state.valid = true;
-    state.links.push(urlStr);
-    state.url = urlStr;
-    state.error = '';
-  })
-    .catch((error) => {
-      state.valid = false;
-      if (axios.isCancel(error)) {
-        console.log('Request canceled', error.message);
+  validate(urlStr).then((link) => addNewRSS(link)).then(() => {
+    setTimeout(function request() {
+      if (state.valid) {
+        state.idPostCount = 0;
+        const promises = state.links.map((url) => getData(url).then((data) => addIDs(data, 0, 1)));
+        Promise.all(promises).then((data) => {
+          console.log(data);
+          const posts = data.flatMap((item) => item.posts);
+          state.posts = posts;
+          console.log('after 5 sec');
+          setTimeout(request, delay);
+        });
       }
-      state.error = error.message === 'this must be a valid URL'
-        ? i18nInstance.t('errors.mustBeValid') : error.message;
-    });
+    }, delay);
+  }).catch((error) => {
+    state.valid = false;
+    console.log(state.valid);
+    if (axios.isCancel(error)) {
+      console.log('Request canceled', error.message);
+    }
+    state.error = error.message === 'this must be a valid URL'
+      ? i18nInstance.t('errors.mustBeValid') : error.message;
+  });
 });

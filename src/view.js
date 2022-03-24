@@ -51,14 +51,18 @@ const render = (elements, i18nInstance) => (path, value, prevValue) => {
     elements.message.classList.add('text-success');
     elements.message.textContent = i18nInstance.t('messages.correct');
     elements.content.classList.remove('visually-hidden');
+    elements.form.reset();
+    elements.input.focus();
   }
 
   if (path === 'feeds') {
     renderFeeds(value, elements);
+    return;
   }
 
   if (path === 'posts') {
     renderPosts(value, elements, i18nInstance);
+    return;
   }
 
   if (path === 'error' && value !== '') {
@@ -67,8 +71,6 @@ const render = (elements, i18nInstance) => (path, value, prevValue) => {
     elements.message.classList.add('text-danger');
     elements.message.textContent = value;
   }
-  elements.form.reset();
-  elements.input.focus();
 };
 
 export default render;
