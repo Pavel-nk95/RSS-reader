@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 /* eslint-disable no-param-reassign */
 import './styles/style.scss';
 import 'bootstrap/js/src/util/';
@@ -5,13 +6,14 @@ import onChange from 'on-change';
 import i18next from 'i18next';
 import * as yup from 'yup';
 import axios from 'axios';
+import _ from 'lodash';
 import ru from './locales/ru.js';
 import parser from './parser.js';
 import render from './view.js';
 
 const defaultLanguage = 'ru';
 
-const delay = 5000;
+const delay = 15000;
 
 const i18nInstance = i18next.createInstance();
 
@@ -80,7 +82,7 @@ const getData = (link) => axios.get(`https://allorigins.hexlet.app/get?disableCa
   throw new Error(i18nInstance.t('errors.unspecific'));
 });
 
-const addIDNumbers = (data) => {
+const addIDNum = (data) => {
   state.feedID += 1;
   const [feed] = data.feed;
   feed.feedId = state.feedID;
@@ -95,8 +97,9 @@ const addIDNumbers = (data) => {
   return { feed, posts };
 };
 
-const addNewRSS = (link) => getData(link).then((data) => addIDNumbers(data)).then((data) => {
+const addNewRSS = (link) => getData(link).then((data) => addIDNum(data)).then((data) => {
   if (state.links.includes(state.url)) {
+    state.valid = false;
     throw new Error(i18nInstance.t('errors.alreadyExists'));
   }
   state.valid = true;
@@ -117,13 +120,23 @@ elements.form.addEventListener('submit', (e) => {
     if (state.valid) {
       setTimeout(function request() {
         // TODO
-        Promise.all(state.links.map((url) => getData(url).then((data) => {
-          state.feedID = 0;
-          state.postID = 0;
-          return addIDNumbers(data);
-        }))).then((data) => {
-          const posts = data.flatMap((item) => item.posts);
-          state.posts = posts;
+        let feedID = 0;
+        Promise.all(state.links.map((url) => getData(url))).then((data) => {
+          const posts = data.map((item) => item.posts).flatMap((posts) => {
+            feedID += 1;
+            return posts.map((item) => {
+              item.feedId = feedID;
+              return item;
+            });
+          });
+          console.log(posts);
+          const difference = _.differenceBy(posts, state.posts, 'title');
+          const result = difference.map((item) => {
+            const postID = state.posts.filter((el) => el.feedId === item.feedId).length + 1;
+            item.id = postID;
+            return item;
+          });
+          state.posts.push(...result);
           setTimeout(request, delay);
         });
       }, delay);
