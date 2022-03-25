@@ -57,12 +57,12 @@ elements.feedsTitle.textContent = i18nInstance.t('static.feeds');
 
 const state = onChange({
   lng: defaultLanguage,
+  postID: 0,
+  feedID: 0,
   links: [],
   feeds: [],
   posts: [],
   valid: false,
-  idPostCount: 0,
-  idFeedCount: 0,
   error: '',
   url: '',
 }, render(elements, i18nInstance));
@@ -80,23 +80,22 @@ const getData = (link) => axios.get(`https://allorigins.hexlet.app/get?disableCa
   throw new Error(i18nInstance.t('errors.unspecific'));
 });
 
-const addIDs = (data, feedCount, postCount) => {
-  state.idFeedCount += feedCount;
+const addIDNumbers = (data) => {
+  state.feedID += 1;
+  const [feed] = data.feed;
+  feed.feedId = state.feedID;
+
   const posts = data.posts.map((item) => {
-    state.idPostCount += postCount;
-    item.id = state.idPostCount;
-    item.feedId = state.idFeedCount;
+    state.postID += 1;
+    item.id = state.postID;
+    item.feedId = state.feedID;
     return item;
   });
-  if (feedCount >= 1) {
-    const [feed] = data.feed;
-    feed.id = state.idFeedCount;
-    return { feed, posts };
-  }
-  return { posts };
+
+  return { feed, posts };
 };
 
-const addNewRSS = (link) => getData(link).then((data) => addIDs(data, 1, 1)).then((data) => {
+const addNewRSS = (link) => getData(link).then((data) => addIDNumbers(data)).then((data) => {
   if (state.links.includes(state.url)) {
     throw new Error(i18nInstance.t('errors.alreadyExists'));
   }
@@ -115,19 +114,20 @@ elements.form.addEventListener('submit', (e) => {
   state.url = urlStr;
 
   validate(urlStr).then((link) => addNewRSS(link)).then(() => {
-    setTimeout(function request() {
-      if (state.valid) {
-        state.idPostCount = 0;
-        const promises = state.links.map((url) => getData(url).then((data) => addIDs(data, 0, 1)));
-        Promise.all(promises).then((data) => {
-          console.log(data);
+    if (state.valid) {
+      setTimeout(function request() {
+        // TODO
+        Promise.all(state.links.map((url) => getData(url).then((data) => {
+          state.feedID = 0;
+          state.postID = 0;
+          return addIDNumbers(data);
+        }))).then((data) => {
           const posts = data.flatMap((item) => item.posts);
           state.posts = posts;
-          console.log('after 5 sec');
           setTimeout(request, delay);
         });
-      }
-    }, delay);
+      }, delay);
+    }
   }).catch((error) => {
     state.valid = false;
     console.log(state.valid);
