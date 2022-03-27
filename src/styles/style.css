@@ -1,5 +1,3 @@
-@import "~bootstrap/scss/bootstrap";
-
 .visually-hidden {
     position: absolute;
     width: 1px;
@@ -11,20 +9,20 @@
     clip-path: inset(100%);
     clip: rect(0 0 0 0);
     overflow: hidden;
-  }
+}
 
-  a {
+a {
     cursor: pointer;
-  }
+}
 
-  .footer {
+.footer {
     padding-bottom: 0 !important;
-  }
+}
 
-  .posts, .feeds {
+.posts, .feeds {
     padding-left: 0;
-  }
+}
 
-  .form-control, .add {
+.form-control, .add {
     height: 3.5rem;
-  }
+}

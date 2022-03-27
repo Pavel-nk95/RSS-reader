@@ -17,17 +17,31 @@ const renderFeeds = (data, elements) => {
   });
 };
 
-const renderPosts = (data, elements, i18nInstance) => {
+const renderPosts = (data, elements, i18nInstance, readPosts) => {
   const list = elements.postsList;
   list.innerHTML = '';
   data.forEach((item) => {
     const li = document.createElement('li');
-    li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+    li.classList.add(
+      'list-group-item',
+      'd-flex',
+      'justify-content-between',
+      'align-items-start',
+      'border-0',
+      'border-end-0',
+    );
     const link = document.createElement('a');
     link.setAttribute('href', `${item.link}`);
-    link.classList.add('fw-bold');
     link.setAttribute('target', '_blank');
     link.textContent = `${item.title}`;
+    link.classList.add('fw-bold');
+
+    if (readPosts.includes(String(item.id))) {
+      link.classList.remove('fw-bold');
+      link.classList.add('fw-normal');
+      link.classList.add('link-secondary');
+    }
+
     const btn = document.createElement('button');
     btn.setAttribute('type', 'button');
     btn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
@@ -42,34 +56,79 @@ const renderPosts = (data, elements, i18nInstance) => {
   });
 };
 
-const render = (elements, i18nInstance) => (path, value, prevValue) => {
+const renderModal = (elements, i18nInstance, { title, description, link }) => {
+  const {
+    modalTitle,
+    modalDescription,
+    modalBtnClose,
+    modalBtnReadAll,
+  } = elements;
+  modalTitle.textContent = title;
+  modalDescription.innerHTML = description;
+  modalBtnClose.textContent = i18nInstance.t('buttons.close');
+  modalBtnReadAll.setAttribute('href', link);
+  modalBtnReadAll.textContent = i18nInstance.t('buttons.readAll');
+};
+
+const render = (elements, i18nInstance, state) => (path, value) => {
   if (path === 'valid' && value) {
-    if (!prevValue) {
-      elements.message.classList.remove('text-danger');
-    }
+    elements.message.textContent = i18nInstance.t('messages.correct');
+    elements.message.classList.remove('text-danger');
     elements.input.classList.remove('is-invalid');
     elements.message.classList.add('text-success');
-    elements.message.textContent = i18nInstance.t('messages.correct');
     elements.content.classList.remove('visually-hidden');
-    elements.form.reset();
-    elements.input.focus();
   }
 
   if (path === 'feeds') {
     renderFeeds(value, elements);
-    return;
   }
 
   if (path === 'posts') {
-    renderPosts(value, elements, i18nInstance);
-    return;
+    renderPosts(value, elements, i18nInstance, state.ui.readPosts);
   }
 
-  if (path === 'error' && value !== '') {
+  if (path === 'process' && value === 'filling') {
+    elements.message.textContent = i18nInstance.t('messages.correct');
+    elements.form.reset();
+    elements.input.focus();
+    elements.input.removeAttribute('readonly');
+    elements.add.disabled = false;
+    elements.input.value = '';
+  }
+
+  if (path === 'process' && value === 'failing') {
+    elements.add.disabled = false;
+    elements.input.removeAttribute('readonly');
+    elements.input.focus();
     elements.input.classList.add('is-invalid');
     elements.message.classList.remove('text-success');
     elements.message.classList.add('text-danger');
+  }
+
+  if (path === 'process' && value === 'sending') {
+    elements.add.disabled = true;
+    elements.input.setAttribute('readonly', true);
+  }
+
+  if (path === 'currentError' && value !== '') {
     elements.message.textContent = value;
+  }
+
+  if (path === 'ui.readPosts') {
+    const currentID = value[value.length - 1];
+    const currentLink = elements.postsList.querySelector(
+      `[data-id="${currentID}"]`,
+    ).previousElementSibling;
+    currentLink.classList.remove('fw-bold');
+    currentLink.classList.add('fw-normal');
+    currentLink.classList.add('link-secondary');
+  }
+
+  if (path === 'modal.state' && value) {
+    const [currentPost] = state.posts.filter(
+      ({ id }) => (id === +state.modal.id),
+    );
+    renderModal(elements, i18nInstance, currentPost);
   }
 };
 

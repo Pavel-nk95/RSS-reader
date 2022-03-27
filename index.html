@@ -1,63 +1,106 @@
 <!DOCTYPE html>
 <html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RSS агрегатор</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RSS агрегатор</title>
-</head>
-
-<body>
-  <div class="d-flex flex-column min-vh-100 justify-content-between">
-    <header class="container-fluid bg-dark p-5">
-      <div class="mx-auto text-white w-75">
-        <h1 class="title display-3 mb-0"></h1>
-        <p class="lead"></p>
-        <form action="" class="rss-form text-body">
-          <div class="row">
-            <div class="col">
-              <input id="url-input" autofocus="" required="" name="url" aria-label="url"
-                class="form-control form-control-lg w-100" autocomplete="off">
-              <label class="description visually-hidden" for="url-input"></label>
-            </div>
-            <div class="col-auto">
-              <button type="submit" aria-label="add" class="add btn btn-lg btn-primary"></button>
-            </div>
+  <body>
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="modal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="modal"
+      aria-modal="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel"></h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
           </div>
-        </form>
-        <p class="mt-2 mb-0 text-muted"></p>
-        <p class="feedback m-0 position-absolute small"></p>
-      </div>
-    </header>
-    <main class="main flex-grow-1">
-      <section class="container-fluid p-5 w-75 content visually-hidden">
-        <div class="row">
-          <div class="col-md-10 col-lg-8 order-1 mx-auto posts">
-            <div class="card border-0">
-              <div class="card-body">
-                <h2 class="card-title posts-title h4"></h2>
-              </div>
-              <ul class="list-group posts-list border-0 rounded-0">
-              </ul>
-            </div>
-          </div>
-          <div class="col-md-10 col-lg-4 mx-auto order-0 order-lg-1 feeds">
-            <div class="card border-0">
-              <div class="card-body">
-                <h2 class="feeds-title card-title h4"></h2>
-              </div>
-              <ul class="list-group feeds-list border-0 rounded-0">
-              </ul>
-            </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary close"
+              data-bs-dismiss="modal"
+            ></button>
+            <a class="btn btn-primary read-all" target="_blank"></a>
           </div>
         </div>
-      </section>
-    </main>
-    <footer class="footer border-top py-3 bg-light">
-      <p class="footer-content text-center"></p>
-    </footer>
-  </div>
-</body>
-
+      </div>
+    </div>
+    <!-- Container -->
+    <div class="d-flex flex-column min-vh-100 justify-content-between">
+      <header class="container-fluid bg-dark p-5">
+        <div class="mx-auto text-white w-75">
+          <h1 class="title display-3 mb-0"></h1>
+          <p class="lead"></p>
+          <form action="" class="rss-form text-body">
+            <div class="row">
+              <div class="col">
+                <input
+                  id="url-input"
+                  autofocus=""
+                  required=""
+                  name="url"
+                  aria-label="url"
+                  class="form-control form-control-lg w-100"
+                  autocomplete="off"
+                />
+                <label
+                  class="description visually-hidden"
+                  for="url-input"
+                ></label>
+              </div>
+              <div class="col-auto">
+                <button
+                  type="submit"
+                  aria-label="add"
+                  class="add btn btn-lg btn-primary"
+                ></button>
+              </div>
+            </div>
+          </form>
+          <p class="mt-2 mb-0 text-muted"></p>
+          <p class="feedback m-0 position-absolute small"></p>
+        </div>
+      </header>
+      <main class="main flex-grow-1">
+        <section class="container-fluid p-5 w-75 content visually-hidden">
+          <div class="row">
+            <div class="col-md-10 col-lg-8 order-1 mx-auto posts">
+              <div class="card border-0">
+                <div class="card-body">
+                  <h2 class="card-title posts-title h4"></h2>
+                </div>
+                <ul class="list-group posts-list border-0 rounded-0"></ul>
+              </div>
+            </div>
+            <div class="col-md-10 col-lg-4 mx-auto order-0 order-lg-1 feeds">
+              <div class="card border-0">
+                <div class="card-body">
+                  <h2 class="feeds-title card-title h4"></h2>
+                </div>
+                <ul class="list-group feeds-list border-0 rounded-0"></ul>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer class="footer border-top py-3 bg-light">
+        <p class="footer-content text-center"></p>
+      </footer>
+    </div>
+  </body>
 </html>
