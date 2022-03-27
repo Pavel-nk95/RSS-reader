@@ -1,5 +1,5 @@
-const parseData = (data) => data.map((node) => {
-  const children = Array.from(node.children);
+const parseData = (data) => data.map((nodes) => {
+  const children = Array.from(nodes.children);
   const [title] = children.filter((item) => item.localName === 'title');
   const [link] = children.filter((item) => item.localName === 'link');
   const [description] = children.filter((item) => item.localName === 'description');
@@ -16,7 +16,7 @@ const parser = (response, errorMessage) => {
   if (regexp.test(str)) {
     const domParser = new DOMParser();
     const data = domParser.parseFromString(str, 'application/xml');
-    const [channel] = Array.from(data.activeElement.children).filter((item) => item.localName === 'channel');
+    const channel = data.querySelector('channel');
     const items = Array.from(channel.children).filter((item) => item.localName === 'item');
     const posts = parseData(items);
     const feed = parseData([channel]);
