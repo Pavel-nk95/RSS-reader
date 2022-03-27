@@ -17,7 +17,7 @@ const renderFeeds = (data, elements) => {
   });
 };
 
-const renderPosts = (data, elements, i18nInstance) => {
+const renderPosts = (data, elements, i18nInstance, readPosts) => {
   const list = elements.postsList;
   list.innerHTML = '';
   data.forEach((item) => {
@@ -25,9 +25,16 @@ const renderPosts = (data, elements, i18nInstance) => {
     li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     const link = document.createElement('a');
     link.setAttribute('href', `${item.link}`);
-    link.classList.add('fw-bold');
     link.setAttribute('target', '_blank');
     link.textContent = `${item.title}`;
+    link.classList.add('fw-bold');
+
+    if (readPosts.includes(String(item.id))) {
+      link.classList.remove('fw-bold');
+      link.classList.add('fw-normal');
+      link.classList.add('link-secondary');
+    }
+
     const btn = document.createElement('button');
     btn.setAttribute('type', 'button');
     btn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
@@ -42,7 +49,21 @@ const renderPosts = (data, elements, i18nInstance) => {
   });
 };
 
-const render = (elements, i18nInstance) => (path, value, prevValue) => {
+const renderModal = (elements, i18nInstance, { title, description, link }) => {
+  const {
+    modalTitle,
+    modalDescription,
+    modalBtnClose,
+    modalBtnReadAll,
+  } = elements;
+  modalTitle.textContent = title;
+  modalDescription.textContent = description;
+  modalBtnClose.textContent = i18nInstance.t('buttons.close');
+  modalBtnReadAll.setAttribute('href', link);
+  modalBtnReadAll.textContent = i18nInstance.t('buttons.readAll');
+};
+
+const render = (elements, i18nInstance, state) => (path, value, prevValue) => {
   if (path === 'valid' && value) {
     if (!prevValue) {
       elements.message.classList.remove('text-danger');
@@ -51,8 +72,6 @@ const render = (elements, i18nInstance) => (path, value, prevValue) => {
     elements.message.classList.add('text-success');
     elements.message.textContent = i18nInstance.t('messages.correct');
     elements.content.classList.remove('visually-hidden');
-    elements.form.reset();
-    elements.input.focus();
   }
 
   if (path === 'feeds') {
@@ -61,7 +80,7 @@ const render = (elements, i18nInstance) => (path, value, prevValue) => {
   }
 
   if (path === 'posts') {
-    renderPosts(value, elements, i18nInstance);
+    renderPosts(value, elements, i18nInstance, state.ui.readPosts);
     return;
   }
 
@@ -70,6 +89,19 @@ const render = (elements, i18nInstance) => (path, value, prevValue) => {
     elements.message.classList.remove('text-success');
     elements.message.classList.add('text-danger');
     elements.message.textContent = value;
+  }
+
+  if (path === 'ui.readPosts') {
+    const currentID = value[value.length - 1];
+    const currentLink = elements.postsList.querySelector(`[data-id="${currentID}"]`).previousElementSibling;
+    currentLink.classList.remove('fw-bold');
+    currentLink.classList.add('fw-normal');
+    currentLink.classList.add('link-secondary');
+  }
+
+  if (path === 'modal.state' && value) {
+    const [currentPost] = state.posts.filter((item) => item.id === +state.modal.id);
+    renderModal(elements, i18nInstance, currentPost);
   }
 };
 

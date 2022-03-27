@@ -2,6 +2,7 @@
 /* eslint-disable no-param-reassign */
 import './styles/style.scss';
 import 'bootstrap/js/src/util/';
+import 'bootstrap/js/src/modal.js';
 import onChange from 'on-change';
 import i18next from 'i18next';
 import * as yup from 'yup';
@@ -10,10 +11,11 @@ import _ from 'lodash';
 import ru from './locales/ru.js';
 import parser from './parser.js';
 import render from './view.js';
+import elements from './elements.js';
 
 const defaultLanguage = 'ru';
 
-const delay = 5000;
+const delay = 15000;
 
 const i18nInstance = i18next.createInstance();
 
@@ -28,25 +30,6 @@ i18nInstance.init({
   },
 });
 
-const elements = {
-  container: document.querySelector('div.d-flex'),
-  form: document.querySelector('.rss-form'),
-  input: document.getElementById('url-input'),
-  main: document.querySelector('.main'),
-  title: document.querySelector('h1.title'),
-  description: document.querySelector('p.lead'),
-  label: document.querySelector('label.description'),
-  add: document.querySelector('button.add'),
-  example: document.querySelector('.text-muted'),
-  footerContent: document.querySelector('.footer-content'),
-  message: document.querySelector('p.feedback'),
-  content: document.querySelector('.content'),
-  postsTitle: document.querySelector('.posts-title'),
-  feedsTitle: document.querySelector('.feeds-title'),
-  postsList: document.querySelector('.posts-list'),
-  feedsList: document.querySelector('.feeds-list'),
-};
-
 elements.title.textContent = i18nInstance.t('static.title');
 elements.description.textContent = i18nInstance.t('static.description');
 elements.label.textContent = i18nInstance.t('static.label');
@@ -57,58 +40,70 @@ elements.input.setAttribute('placeholder', i18nInstance.t('static.placeholder'))
 elements.postsTitle.textContent = i18nInstance.t('static.posts');
 elements.feedsTitle.textContent = i18nInstance.t('static.feeds');
 
-const state = onChange({
+const state = {
   lng: defaultLanguage,
   feedID: 0,
+  postID: 0,
+  modal: {
+    id: '',
+    state: false,
+  },
   links: [],
   feeds: [],
   posts: [],
   valid: false,
   error: '',
   url: '',
-  uiState: {
+  ui: {
     readPosts: [],
   },
-}, render(elements, i18nInstance));
+};
 
-const schema = yup.string().url().notOneOf(state.links);
+const watchedState = onChange(state, render(elements, i18nInstance, state));
+
+const schema = yup.string().url().notOneOf(watchedState.links);
 
 const validate = (url) => schema.validate(url);
 
-const getData = (link) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(link)}`, {
-  cancelToken: source.token,
-  timeout: 10000,
-}).then((response) => {
-  if (response.statusText === 'OK') return Promise.resolve(parser(response, i18nInstance.t('errors.notContainValid')));
-  state.valid = false;
-  throw new Error(i18nInstance.t('errors.unspecific'));
-});
-
-const addIDNum = (data) => {
-  state.feedID += 1;
+const addIDNum = (data, startCount) => {
+  if (startCount === 0) {
+    watchedState.feedID = 0;
+    watchedState.postID = 0;
+  }
+  watchedState.feedID += 1;
   const [feed] = data.feed;
-  feed.feedId = state.feedID;
+  feed.feedId = watchedState.feedID;
 
-  let postID = 0;
   const posts = data.posts.map((item) => {
-    postID += 1;
-    item.id = postID;
-    item.feedId = state.feedID;
+    watchedState.postID += 1;
+    item.id = watchedState.postID;
+    item.feedId = watchedState.feedID;
     return item;
   });
   return { feed, posts };
 };
 
-const addNewRSS = (link) => getData(link).then((data) => addIDNum(data)).then((data) => {
-  if (state.links.includes(state.url)) {
-    state.valid = false;
+const getData = (link, startCount = null) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(link)}`, {
+  cancelToken: source.token,
+  timeout: 10000,
+}).then((response) => {
+  if (response.statusText === 'OK') return Promise.resolve(parser(response, i18nInstance.t('errors.notContainValid')));
+  watchedState.valid = false;
+  throw new Error(i18nInstance.t('errors.unspecific'));
+}).then((data) => addIDNum(data, startCount));
+
+const addNewRSS = (link) => getData(link).then((data) => {
+  if (watchedState.links.includes(watchedState.url)) {
+    watchedState.valid = false;
     throw new Error(i18nInstance.t('errors.alreadyExists'));
   }
-  state.valid = true;
-  state.links.push(state.url);
-  state.feeds.push(data.feed);
-  state.posts.push(...data.posts);
-  state.error = '';
+  watchedState.valid = true;
+  watchedState.links.push(watchedState.url);
+  watchedState.feeds.push(data.feed);
+  watchedState.posts.push(...data.posts);
+  watchedState.error = '';
+  elements.form.reset();
+  elements.input.focus();
   return data;
 });
 
@@ -116,39 +111,40 @@ elements.form.addEventListener('submit', (e) => {
   e.preventDefault();
   const formData = new FormData(e.target);
   const urlStr = formData.get('url');
-  state.url = urlStr;
+  watchedState.url = urlStr;
 
   validate(urlStr).then((link) => addNewRSS(link)).then(() => {
-    if (state.valid) {
-      setTimeout(function request() {
-        let feedID = 0;
-        Promise.all(state.links.map((url) => getData(url))).then((data) => {
-          const posts = data.map((item) => item.posts).flatMap((posts) => {
-            feedID += 1;
-            let postID = 0;
-            return posts.map((item) => {
-              item.feedId = feedID;
-              postID += 1;
-              item.id = postID;
-              return item;
-            });
-          });
-          const difference = _.differenceBy(posts, state.posts, 'title');
-          const result = difference.map((item) => {
-            const postID = state.posts.filter((el) => el.feedId === item.feedId).length + 1;
-            item.id = postID;
-            return item;
-          });
-          state.posts.push(...result);
-          state.posts = _.sortBy(state.posts, ['feedId', 'id']);
+    setTimeout(function request() {
+      if (watchedState.valid) {
+        Promise.all(watchedState.links.map((url) => getData(url, 0))).then((data) => {
+          const { posts } = data;
+          const difference = _.differenceBy(posts, watchedState.posts, 'title');
+          watchedState.posts.push(...difference);
+          watchedState.posts = _.sortBy(watchedState.posts, ['feedId', 'id']);
           setTimeout(request, delay);
         });
-      }, delay);
-    }
+      }
+      // clearTimeout(timerId);
+    }, delay);
   }).catch((error) => {
-    state.valid = false;
+    watchedState.valid = false;
     const errorMessage = error.message === 'this must be a valid URL'
       ? i18nInstance.t('errors.mustBeValid') : error.message;
-    state.error = errorMessage;
+    watchedState.error = errorMessage;
   });
+});
+
+elements.postsList.addEventListener('click', (event) => {
+  const { target } = event;
+  const { id } = target.dataset;
+  watchedState.ui.readPosts.push(id);
+  watchedState.modal.id = id;
+  watchedState.modal.state = true;
+});
+
+elements.modal.addEventListener('click', (event) => {
+  const { target } = event;
+  if (target.dataset.bsDismiss === 'modal') {
+    watchedState.modal.state = false;
+  }
 });
