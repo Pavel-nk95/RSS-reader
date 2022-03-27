@@ -13,7 +13,7 @@ import render from './view.js';
 
 const defaultLanguage = 'ru';
 
-const delay = 15000;
+const delay = 5000;
 
 const i18nInstance = i18next.createInstance();
 
@@ -59,7 +59,6 @@ elements.feedsTitle.textContent = i18nInstance.t('static.feeds');
 
 const state = onChange({
   lng: defaultLanguage,
-  postID: 0,
   feedID: 0,
   links: [],
   feeds: [],
@@ -67,6 +66,9 @@ const state = onChange({
   valid: false,
   error: '',
   url: '',
+  uiState: {
+    readPosts: [],
+  },
 }, render(elements, i18nInstance));
 
 const schema = yup.string().url().notOneOf(state.links);
@@ -87,13 +89,13 @@ const addIDNum = (data) => {
   const [feed] = data.feed;
   feed.feedId = state.feedID;
 
+  let postID = 0;
   const posts = data.posts.map((item) => {
-    state.postID += 1;
-    item.id = state.postID;
+    postID += 1;
+    item.id = postID;
     item.feedId = state.feedID;
     return item;
   });
-
   return { feed, posts };
 };
 
@@ -119,17 +121,18 @@ elements.form.addEventListener('submit', (e) => {
   validate(urlStr).then((link) => addNewRSS(link)).then(() => {
     if (state.valid) {
       setTimeout(function request() {
-        // TODO
         let feedID = 0;
         Promise.all(state.links.map((url) => getData(url))).then((data) => {
           const posts = data.map((item) => item.posts).flatMap((posts) => {
             feedID += 1;
+            let postID = 0;
             return posts.map((item) => {
               item.feedId = feedID;
+              postID += 1;
+              item.id = postID;
               return item;
             });
           });
-          console.log(posts);
           const difference = _.differenceBy(posts, state.posts, 'title');
           const result = difference.map((item) => {
             const postID = state.posts.filter((el) => el.feedId === item.feedId).length + 1;
@@ -137,17 +140,15 @@ elements.form.addEventListener('submit', (e) => {
             return item;
           });
           state.posts.push(...result);
+          state.posts = _.sortBy(state.posts, ['feedId', 'id']);
           setTimeout(request, delay);
         });
       }, delay);
     }
   }).catch((error) => {
     state.valid = false;
-    console.log(state.valid);
-    if (axios.isCancel(error)) {
-      console.log('Request canceled', error.message);
-    }
-    state.error = error.message === 'this must be a valid URL'
+    const errorMessage = error.message === 'this must be a valid URL'
       ? i18nInstance.t('errors.mustBeValid') : error.message;
+    state.error = errorMessage;
   });
 });
