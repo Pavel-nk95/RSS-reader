@@ -124,7 +124,6 @@ elements.form.addEventListener('submit', (e) => {
           setTimeout(request, delay);
         });
       }
-      // clearTimeout(timerId);
     }, delay);
   }).catch((error) => {
     watchedState.valid = false;

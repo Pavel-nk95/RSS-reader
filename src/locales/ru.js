@@ -10,13 +10,14 @@ export default {
       posts: 'Посты',
     },
     errors: {
-      unspecific: 'Невозможно получить данные. Что-то пошло не так.',
+      unspecific: 'Ошибка сети',
       alreadyExists: 'RSS уже существует',
       notContainValid: 'Ресурс не содержит валидный RSS',
       mustBeValid: 'Ссылка должна быть валидным URL',
     },
     messages: {
       correct: 'RSS успешно загружен',
+      notEmpty: 'Не должно быть пустым',
     },
     buttons: {
       add: 'Добавить',
