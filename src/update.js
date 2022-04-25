@@ -1,19 +1,32 @@
 /* eslint-disable no-param-reassign */
 import _ from 'lodash';
-import { getData } from './loader.js';
+import axios from 'axios';
+import parser from './parser.js';
+import createUrl from './createUrl.js';
 
-const update = (state, delay, i18nInstance) => {
+const update = (state, delay) => {
   setTimeout(function request() {
-    if (state.valid) {
+    Promise.all(
+      state.links.map((url) => (
+        Promise.resolve(url)
+          .then((link) => axios.get(createUrl(link)))
+          .then((response) => parser(response))
+          .then((data) => {
+            const posts = data.posts.map((item) => {
+              state.postID += 1;
+              item.id = state.postID;
+              item.feedId = state.feedID;
+              return item;
+            });
+            const difference = _.differenceBy(posts, state.posts, 'title');
+            state.posts.push(...difference);
+            state.posts = _.sortBy(state.posts, ['feedId', 'id']);
+          })
+      )),
+    ).finally(() => {
       console.log(delay);
-      Promise.all(state.links.map((url) => getData(url, i18nInstance, state))).then((data) => {
-        const { posts } = data;
-        const difference = _.differenceBy(posts, state.posts, 'title');
-        state.posts.push(...difference);
-        state.posts = _.sortBy(state.posts, ['feedId', 'id']);
-        setTimeout(request, delay);
-      });
-    }
+      setTimeout(request, delay);
+    });
   }, delay);
 };
 

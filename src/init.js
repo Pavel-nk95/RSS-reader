@@ -4,7 +4,7 @@ import * as yup from 'yup';
 import ru from './locales/ru.js';
 import render from './view.js';
 import findDOMItems from './nodes.js';
-import { loadRSS } from './loader.js';
+import loader from './loader.js';
 import update from './update.js';
 
 const delay = 5000;
@@ -27,11 +27,15 @@ export default () => {
   elements.add.textContent = i18nInstance.t('buttons.add');
   elements.example.textContent = i18nInstance.t('static.example');
   elements.footerContent.textContent = i18nInstance.t('static.footerContent');
-  elements.input.setAttribute('placeholder', i18nInstance.t('static.placeholder'));
+  elements.input.setAttribute(
+    'placeholder',
+    i18nInstance.t('static.placeholder'),
+  );
   elements.postsTitle.textContent = i18nInstance.t('static.posts');
   elements.feedsTitle.textContent = i18nInstance.t('static.feeds');
 
   const state = {
+    process: 'filling',
     feedID: 0,
     postID: 0,
     modal: {
@@ -42,8 +46,8 @@ export default () => {
     feeds: [],
     posts: [],
     valid: false,
-    error: '',
-    url: '',
+    currentError: '',
+    currentUrl: '',
     ui: {
       readPosts: [],
     },
@@ -55,17 +59,36 @@ export default () => {
 
   const validate = (url) => schema.validate(url);
 
+  const generateErrorMessage = (message) => {
+    switch (message) {
+      case 'this must be a valid URL':
+        return i18nInstance.t('errors.mustBeValid');
+      case 'not contain valid URL':
+        return i18nInstance.t('errors.notContainValid');
+      case 'already exists':
+        return i18nInstance.t('errors.alreadyExists');
+      case 'not empty':
+        return i18nInstance.t('messages.notEmpty');
+      default:
+        return i18nInstance.t('errors.unspecific');
+    }
+  };
+
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const urlStr = formData.get('url');
-    watchedState.url = urlStr;
-    elements.add.disabled = true;
-    elements.input.setAttribute('readonly', true);
-    const validatePromise = validate(urlStr);
+    watchedState.currentUrl = urlStr;
 
-    loadRSS(validatePromise, watchedState, elements, i18nInstance);
-    update(watchedState, delay, i18nInstance);
+    validate(urlStr)
+      .then((url) => loader(url, watchedState))
+      .then(() => update(watchedState, delay))
+      .catch((error) => {
+        const errorMessage = generateErrorMessage(error.message);
+        watchedState.process = 'failing';
+        watchedState.valid = false;
+        watchedState.currentError = errorMessage;
+      });
   });
 
   elements.postsList.addEventListener('click', (event) => {

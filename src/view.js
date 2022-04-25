@@ -22,7 +22,14 @@ const renderPosts = (data, elements, i18nInstance, readPosts) => {
   list.innerHTML = '';
   data.forEach((item) => {
     const li = document.createElement('li');
-    li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+    li.classList.add(
+      'list-group-item',
+      'd-flex',
+      'justify-content-between',
+      'align-items-start',
+      'border-0',
+      'border-end-0',
+    );
     const link = document.createElement('a');
     link.setAttribute('href', `${item.link}`);
     link.setAttribute('target', '_blank');
@@ -65,6 +72,7 @@ const renderModal = (elements, i18nInstance, { title, description, link }) => {
 
 const render = (elements, i18nInstance, state) => (path, value) => {
   if (path === 'valid' && value) {
+    elements.message.textContent = i18nInstance.t('messages.correct');
     elements.message.classList.remove('text-danger');
     elements.input.classList.remove('is-invalid');
     elements.message.classList.add('text-success');
@@ -79,23 +87,47 @@ const render = (elements, i18nInstance, state) => (path, value) => {
     renderPosts(value, elements, i18nInstance, state.ui.readPosts);
   }
 
-  if (path === 'error' && value !== '') {
+  if (path === 'process' && value === 'filling') {
+    elements.message.textContent = i18nInstance.t('messages.correct');
+    elements.form.reset();
+    elements.input.focus();
+    elements.input.removeAttribute('readonly');
+    elements.add.disabled = false;
+    elements.input.value = '';
+  }
+
+  if (path === 'process' && value === 'failing') {
+    elements.add.disabled = false;
+    elements.input.removeAttribute('readonly');
+    elements.input.focus();
     elements.input.classList.add('is-invalid');
     elements.message.classList.remove('text-success');
     elements.message.classList.add('text-danger');
+  }
+
+  if (path === 'process' && value === 'sending') {
+    elements.add.disabled = true;
+    elements.input.setAttribute('readonly', true);
+  }
+
+  if (path === 'currentError' && value !== '') {
     elements.message.textContent = value;
   }
 
   if (path === 'ui.readPosts') {
     const currentID = value[value.length - 1];
-    const currentLink = elements.postsList.querySelector(`[data-id="${currentID}"]`).previousElementSibling;
+    const currentLink = elements.postsList.querySelector(
+      `[data-id="${currentID}"]`,
+    ).previousElementSibling;
     currentLink.classList.remove('fw-bold');
     currentLink.classList.add('fw-normal');
     currentLink.classList.add('link-secondary');
   }
 
   if (path === 'modal.state' && value) {
-    const [currentPost] = state.posts.filter((item) => item.id === +state.modal.id);
+    const [currentPost] = state.posts.filter(
+      ({ id }) => (id === +state.modal.id),
+    );
     renderModal(elements, i18nInstance, currentPost);
   }
 };
