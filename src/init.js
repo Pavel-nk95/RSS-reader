@@ -70,7 +70,7 @@ export default () => {
     switch (message) {
       case 'this must be a valid URL':
         return i18nInstance.t('errors.mustBeValid');
-      case 'not contain valid':
+      case 'not contain valid URL':
         return i18nInstance.t('errors.notContainValid');
       case 'already exists':
         return i18nInstance.t('errors.alreadyExists');
