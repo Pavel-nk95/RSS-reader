@@ -5,7 +5,7 @@ import parser from './parser.js';
 import createUrl from './createUrl.js';
 
 const update = (state, delay) => {
-  const request = () => {
+  setTimeout(function request() {
     Promise.all(
       state.links.map((url) => (
         Promise.resolve(url)
@@ -26,8 +26,7 @@ const update = (state, delay) => {
     ).finally(() => {
       setTimeout(request, delay);
     });
-  };
-  request();
+  }, delay);
 };
 
 export default update;
