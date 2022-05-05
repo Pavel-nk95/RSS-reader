@@ -5,10 +5,8 @@ import createUrl from './createUrl.js';
 
 const { CancelToken } = axios;
 const source = CancelToken.source();
-
 const loader = (url, state) => {
   state.process = 'sending';
-
   return axios
     .get(createUrl(url), {
       cancelToken: source.token,
