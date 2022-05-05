@@ -11,9 +11,7 @@ const parseData = (data) => data.map((nodes) => {
 });
 
 const parser = (response) => {
-  const regexp = /<rss|version="2\.0"|channel/gi;
-  const str = response.data.contents;
-  if (regexp.test(str)) {
+    const str = response.data.contents;
     const domParser = new DOMParser();
     const data = domParser.parseFromString(str, 'application/xml');
     const channel = data.querySelector('channel');
@@ -21,8 +19,7 @@ const parser = (response) => {
     const posts = parseData(items);
     const feed = parseData([channel]);
     return { posts, feed };
-  }
-  throw new Error('not contain valid URL');
 };
 
 export default parser;
+

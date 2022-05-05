@@ -55,15 +55,20 @@ export default () => {
 
   const watchedState = onChange(state, render(elements, i18nInstance, state));
 
-  const schema = yup.string().url().notOneOf(watchedState.links);
+  const schema = yup.string().url();
 
-  const validate = (url) => schema.validate(url);
+  const validate = (url) => {
+    if (state.links.includes(url)) {
+      return new Promise(() => {throw new Error('already exists')});
+    }
+    return schema.validate(url);
+  };
 
   const generateErrorMessage = (message) => {
     switch (message) {
       case 'this must be a valid URL':
         return i18nInstance.t('errors.mustBeValid');
-      case 'not contain valid URL':
+      case 'channel is null':
         return i18nInstance.t('errors.notContainValid');
       case 'already exists':
         return i18nInstance.t('errors.alreadyExists');

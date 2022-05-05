@@ -7,9 +7,6 @@ const { CancelToken } = axios;
 const source = CancelToken.source();
 
 const loader = (url, state) => {
-  if (state.links.includes(url)) {
-    throw new Error('already exists');
-  }
 
   state.process = 'sending';
 
