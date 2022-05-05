@@ -11,6 +11,7 @@ const parseData = (data) => data.map((nodes) => {
 });
 
 const parser = (response) => {
+  try {
     const str = response.data.contents;
     const domParser = new DOMParser();
     const data = domParser.parseFromString(str, 'application/xml');
@@ -19,7 +20,9 @@ const parser = (response) => {
     const posts = parseData(items);
     const feed = parseData([channel]);
     return { posts, feed };
+  } catch (error) {
+    throw new Error('not contain valid');
+  }
 };
 
 export default parser;
-

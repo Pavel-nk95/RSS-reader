@@ -7,7 +7,6 @@ const { CancelToken } = axios;
 const source = CancelToken.source();
 
 const loader = (url, state) => {
-
   state.process = 'sending';
 
   return axios
