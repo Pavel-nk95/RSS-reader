@@ -10,7 +10,7 @@ const update = (state, delay) => {
       state.links.map((url) => (
         Promise.resolve(url)
           .then((link) => axios.get(createUrl(link)))
-          .then((response) => parser(response))
+          .then((response) => parser(response.data.contents))
           .then((data) => {
             const posts = data.posts.map((item) => {
               state.postID += 1;

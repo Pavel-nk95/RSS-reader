@@ -12,8 +12,8 @@ const loader = (url, state) => {
       cancelToken: source.token,
       timeout: 10000,
     })
-    .then((response) => parser(response))
-    .then((data) => {
+    .then((response) => {
+      const data = parser(response.data.contents);
       state.feedID += 1;
       const [feed] = data.feed;
       feed.feedId = state.feedID;
@@ -30,6 +30,8 @@ const loader = (url, state) => {
       state.posts.push(...posts);
       state.error = '';
       state.process = 'filling';
+    }).catch((error) => {
+      throw new Error('not contain valid');
     });
 };
 

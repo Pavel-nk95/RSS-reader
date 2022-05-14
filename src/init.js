@@ -39,7 +39,7 @@ export default () => {
     feedID: 0,
     postID: 0,
     modal: {
-      id: '',
+      id: null,
       state: false,
     },
     links: [],
@@ -49,7 +49,7 @@ export default () => {
     currentError: '',
     currentUrl: '',
     ui: {
-      readPosts: [],
+      readPosts: new Set(),
     },
   };
 
@@ -102,7 +102,7 @@ export default () => {
     const { target } = event;
     if (target.tagName === 'BUTTON') {
       const { id } = target.dataset;
-      watchedState.ui.readPosts.push(id);
+      watchedState.ui.readPosts.add(id);
       watchedState.modal.id = id;
       watchedState.modal.state = true;
     }

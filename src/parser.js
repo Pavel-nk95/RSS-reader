@@ -1,28 +1,22 @@
-const parseData = (data) => data.map((nodes) => {
-  const children = Array.from(nodes.children);
-  const [title] = children.filter((item) => item.localName === 'title');
-  const [link] = children.filter((item) => item.localName === 'link');
-  const [description] = children.filter(({ localName }) => (localName === 'description'));
+const parseData = (data) => data.map((node) => {
+  const title = node.querySelector('title').textContent;
+  const link = node.querySelector('link').textContent;
+  const description = node.querySelector('description').textContent;
   return {
-    title: title.textContent,
-    link: link.textContent,
-    description: description.textContent,
+    title,
+    link,
+    description,
   };
 });
 
-const parser = (response) => {
-  try {
-    const str = response.data.contents;
+const parser = (content) => {
     const domParser = new DOMParser();
-    const data = domParser.parseFromString(str, 'application/xml');
+    const data = domParser.parseFromString(content, 'application/xml');
     const channel = data.querySelector('channel');
-    const items = Array.from(channel.children).filter(({ localName }) => (localName === 'item'));
+    const items = Array.from(channel.querySelectorAll('item'));
     const posts = parseData(items);
     const feed = parseData([channel]);
     return { posts, feed };
-  } catch (error) {
-    throw new Error('not contain valid');
-  }
 };
 
 export default parser;

@@ -36,7 +36,7 @@ const renderPosts = (data, elements, i18nInstance, readPosts) => {
     link.textContent = `${item.title}`;
     link.classList.add('fw-bold');
 
-    if (readPosts.includes(String(item.id))) {
+    if (readPosts.has(String(item.id))) {
       link.classList.remove('fw-bold');
       link.classList.add('fw-normal');
       link.classList.add('link-secondary');
@@ -115,7 +115,8 @@ const render = (elements, i18nInstance, state) => (path, value) => {
   }
 
   if (path === 'ui.readPosts') {
-    const currentID = value[value.length - 1];
+    const items = Array.from(value);
+    const currentID = items[items.length - 1];
     const currentLink = elements.postsList.querySelector(
       `[data-id="${currentID}"]`,
     ).previousElementSibling;
