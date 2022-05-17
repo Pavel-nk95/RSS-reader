@@ -4,7 +4,6 @@ import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import { fileURLToPath } from 'url';
-import FaviconsWebpackPlugin from 'favicons-webpack-plugin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,6 +47,5 @@ export default {
       template: './index.html',
     }),
     new CleanWebpackPlugin(),
-    new FaviconsWebpackPlugin('./favicon.ico'),
   ],
 };
