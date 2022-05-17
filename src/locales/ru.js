@@ -5,7 +5,7 @@ export default {
       description: 'Начните читать RSS сегодня! Это легко, это красиво.',
       placeholder: 'Ссылка RSS',
       example: 'Пример: https://ru.hexlet.io/lessons.rss',
-      footerContent: 'created by Pavel.n.k',
+      footerContent: 'created by Pavel.NK',
       feeds: 'Фиды',
       posts: 'Посты',
     },

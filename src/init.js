@@ -36,8 +36,6 @@ export default () => {
 
   const state = {
     process: 'filling',
-    feedID: 0,
-    postID: 0,
     modal: {
       id: null,
       state: false,
@@ -47,7 +45,6 @@ export default () => {
     posts: [],
     valid: false,
     currentError: '',
-    currentUrl: '',
     ui: {
       readPosts: new Set(),
     },
@@ -60,38 +57,40 @@ export default () => {
   const validate = (url) => {
     if (state.links.includes(url)) {
       return new Promise(() => {
-        throw new Error('already exists');
+        const error = new Error;
+        error.isAlreadyExists = true;
+        throw error;
       });
     }
     return schema.validate(url);
   };
 
-  const generateErrorMessage = (message) => {
-    switch (message) {
-      case 'this must be a valid URL':
-        return i18nInstance.t('errors.mustBeValid');
-      case 'not contain valid':
-        return i18nInstance.t('errors.notContainValid');
-      case 'already exists':
-        return i18nInstance.t('errors.alreadyExists');
-      case 'not empty':
-        return i18nInstance.t('messages.notEmpty');
-      default:
-        return i18nInstance.t('errors.unspecific');
+  const generateErrorMessage = (error) => {
+    if (error.isAlreadyExists) {
+      return i18nInstance.t('errors.alreadyExists');
     }
+    if (error.isNotContainValid) {
+      return i18nInstance.t('errors.notContainValid');
+    }
+    if (error.isParsingError) {
+      return i18nInstance.t('errors.mustBeValid');
+    }
+    return i18nInstance.t('errors.unspecific');
   };
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const urlStr = formData.get('url');
-    watchedState.currentUrl = urlStr;
 
     validate(urlStr)
       .then((url) => loader(url, watchedState))
       .then(() => update(watchedState, delay))
       .catch((error) => {
-        const errorMessage = generateErrorMessage(error.message);
+        if (error.name === 'ValidationError') {
+          error.isParsingError = true;
+        }
+        const errorMessage = generateErrorMessage(error);
         watchedState.process = 'failing';
         watchedState.valid = false;
         watchedState.currentError = errorMessage;

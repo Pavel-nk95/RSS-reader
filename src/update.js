@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import _ from 'lodash';
+import { differenceBy, sortBy } from 'lodash';
 import axios from 'axios';
 import parser from './parser.js';
 import createUrl from './createUrl.js';
@@ -10,17 +10,13 @@ const update = (state, delay) => {
       state.links.map((url) => (
         Promise.resolve(url)
           .then((link) => axios.get(createUrl(link)))
-          .then((response) => parser(response.data.contents))
-          .then((data) => {
-            const posts = data.posts.map((item) => {
-              state.postID += 1;
-              item.id = state.postID;
-              item.feedId = state.feedID;
-              return item;
-            });
-            const difference = _.differenceBy(posts, state.posts, 'title');
-            state.posts.push(...difference);
-            state.posts = _.sortBy(state.posts, ['feedId', 'id']);
+          .then((response) => {
+            const { posts } = parser(response.data.contents);
+            const newPosts = differenceBy(posts, state.posts, 'title');
+            if (newPosts.length !== 0) {
+              state.posts.push(...newPosts);
+              state.posts = sortBy(state.posts, ['feedId', 'id']);
+            }
           })
       )),
     ).finally(() => {

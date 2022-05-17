@@ -13,25 +13,17 @@ const loader = (url, state) => {
       timeout: 10000,
     })
     .then((response) => {
-      const data = parser(response.data.contents);
-      state.feedID += 1;
-      const [feed] = data.feed;
-      feed.feedId = state.feedID;
-
-      const posts = data.posts.map((item) => {
-        state.postID += 1;
-        item.id = state.postID;
-        item.feedId = state.feedID;
-        return item;
-      });
+      const { feed, posts } = parser(response.data.contents);
       state.valid = true;
-      state.links.push(state.currentUrl);
+      state.links.push(url);
       state.feeds.push(feed);
       state.posts.push(...posts);
       state.error = '';
       state.process = 'filling';
-    }).catch((error) => {
-      throw new Error('not contain valid');
+    }).catch(() => {
+      const error = new Error;
+      error.isNotContainValid = true;
+      throw error;
     });
 };
 
