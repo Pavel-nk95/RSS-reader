@@ -21,7 +21,7 @@ const loader = (url, state) => {
       state.error = '';
       state.process = 'filling';
     }).catch(() => {
-      const error = new Error;
+      const error = new Error();
       error.isNotContainValid = true;
       throw error;
     });

@@ -13,19 +13,17 @@ const generateData = (node, feedId) => {
 };
 
 const parser = (content) => {
-    const domParser = new DOMParser();
-    const data = domParser.parseFromString(content, 'application/xml');
-    const channel = data.querySelector('channel');
-    const items = Array.from(channel.querySelectorAll('item'));
-    const feedId = +uniqueId();
-    const posts = items.map((item, id) => {
-      return {
-        ...generateData(item, feedId),
-        id: id + 1,
-      }
-    });
-    const feed = generateData(channel, feedId);
-    return { posts, feed };
+  const domParser = new DOMParser();
+  const data = domParser.parseFromString(content, 'application/xml');
+  const channel = data.querySelector('channel');
+  const items = Array.from(channel.querySelectorAll('item'));
+  const feedId = +uniqueId();
+  const posts = items.map((item, id) => ({
+    ...generateData(item, feedId),
+    id: id + 1,
+  }));
+  const feed = generateData(channel, feedId);
+  return { posts, feed };
 };
 
 export default parser;

@@ -57,7 +57,7 @@ export default () => {
   const validate = (url) => {
     if (state.links.includes(url)) {
       return new Promise(() => {
-        const error = new Error;
+        const error = new Error();
         error.isAlreadyExists = true;
         throw error;
       });
@@ -87,10 +87,11 @@ export default () => {
       .then((url) => loader(url, watchedState))
       .then(() => update(watchedState, delay))
       .catch((error) => {
-        if (error.name === 'ValidationError') {
-          error.isParsingError = true;
+        const currentError = error;
+        if (currentError.name === 'ValidationError') {
+          currentError.isParsingError = true;
         }
-        const errorMessage = generateErrorMessage(error);
+        const errorMessage = generateErrorMessage(currentError);
         watchedState.process = 'failing';
         watchedState.valid = false;
         watchedState.currentError = errorMessage;
