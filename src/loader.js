@@ -20,7 +20,7 @@ const loader = (url, state) => {
       state.posts.push(...posts);
       state.error = '';
       state.process = 'filling';
-    }).catch((err) => {
+    }).catch(() => {
       const error = new Error();
       error.isNotContainValid = true;
       throw error;
