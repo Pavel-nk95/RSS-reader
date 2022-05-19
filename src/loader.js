@@ -23,10 +23,8 @@ const loader = (url, state) => {
     }).catch((err) => {
       const error = new Error();
       if (err.request || err.response) {
-        // @ts-ignore
         error.networkError = true;
       } else {
-        // @ts-ignore
         error.isNotContainValid = true;
       }
       throw error;

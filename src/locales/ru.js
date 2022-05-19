@@ -10,7 +10,8 @@ export default {
       posts: 'Посты',
     },
     errors: {
-      unspecific: 'Ошибка сети',
+      networkError: 'Ошибка сети',
+      unspecific: 'Неизвестная ошибка',
       alreadyExists: 'RSS уже существует',
       notContainValid: 'Ресурс не содержит валидный RSS',
       mustBeValid: 'Ссылка должна быть валидным URL',

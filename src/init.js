@@ -77,14 +77,13 @@ export default () => {
       return i18nInstance.t('errors.mustBeValid');
     }
     if (error.networkError) {
-      return i18nInstance.t('errors.unspecific');
+      return i18nInstance.t('errors.networkError');
     }
     return i18nInstance.t('errors.unspecific');
   };
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
-    // @ts-ignore
     const formData = new FormData(e.target);
     const urlStr = formData.get('url');
 
@@ -92,7 +91,6 @@ export default () => {
       .then((url) => loader(url, watchedState))
       .then(() => update(watchedState, delay))
       .catch((error) => {
-        console.log(JSON.stringify(error));
         const currentError = error;
         if (currentError.name === 'ValidationError') {
           currentError.isParsingError = true;
@@ -106,9 +104,7 @@ export default () => {
 
   elements.postsList.addEventListener('click', (event) => {
     const { target } = event;
-    // @ts-ignore
     if (target.tagName === 'BUTTON') {
-      // @ts-ignore
       const { id } = target.dataset;
       watchedState.ui.readPosts.add(id);
       watchedState.modal.id = id;
@@ -118,7 +114,6 @@ export default () => {
 
   elements.modal.addEventListener('click', (event) => {
     const { target } = event;
-    // @ts-ignore
     if (target.dataset.bsDismiss === 'modal') {
       watchedState.modal.state = false;
     }
