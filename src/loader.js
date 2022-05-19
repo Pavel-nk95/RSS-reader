@@ -10,7 +10,7 @@ const loader = (url, state) => {
   return axios
     .get(createUrl(url), {
       cancelToken: source.token,
-      timeout: 10000,
+      timeout: 5000,
     })
     .then((response) => {
       const { feed, posts } = parser(response.data.contents);
@@ -20,9 +20,15 @@ const loader = (url, state) => {
       state.posts.push(...posts);
       state.error = '';
       state.process = 'filling';
-    }).catch(() => {
+    }).catch((err) => {
       const error = new Error();
-      error.isNotContainValid = true;
+      if (err.request || err.response) {
+        // @ts-ignore
+        error.networkError = true;
+      } else {
+        // @ts-ignore
+        error.isNotContainValid = true;
+      }
       throw error;
     });
 };
