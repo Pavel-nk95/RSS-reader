@@ -79,6 +79,7 @@ export default () => {
     if (error.networkError) {
       return i18nInstance.t('errors.unspecific');
     }
+    return i18nInstance.t('errors.unspecific');
   };
 
   elements.form.addEventListener('submit', (e) => {
