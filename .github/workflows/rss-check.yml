@@ -12,11 +12,10 @@ jobs:
     - uses: actions/setup-node@v1
       name: 'setup node'
       with:
-        node-version: '16.x'
+        node-version: '17.x'
 
     - name: install
-      run: |
-        make install
+      run: make install
       env:
         CI: true
 

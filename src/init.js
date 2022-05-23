@@ -79,14 +79,15 @@ export default () => {
       .then((url) => loader(url, watchedState))
       .then(() => update(watchedState, delay))
       .catch((error) => {
-        const { type } = error;
+        const currentError = { ...error };
+        const { type } = currentError;
         if (type === 'url') {
-          error.isParsingError = true;
+          currentError.isParsingError = true;
         }
         if (type === 'notOneOf') {
-          error.isAlreadyExists = true;
+          currentError.isAlreadyExists = true;
         }
-        const errorMessage = generateErrorMessage(error);
+        const errorMessage = generateErrorMessage(currentError);
         watchedState.process = 'failing';
         watchedState.valid = false;
         watchedState.currentError = errorMessage;
