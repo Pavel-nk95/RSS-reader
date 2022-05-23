@@ -54,18 +54,6 @@ export default () => {
 
   const schema = yup.string().url();
 
-  const validate = (url) => {
-    if (state.links.includes(url)) {
-      return new Promise(() => {
-        const error = new Error();
-        // @ts-ignore
-        error.isAlreadyExists = true;
-        throw error;
-      });
-    }
-    return schema.validate(url);
-  };
-
   const generateErrorMessage = (error) => {
     if (error.isAlreadyExists) {
       return i18nInstance.t('errors.alreadyExists');
@@ -85,17 +73,20 @@ export default () => {
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const urlStr = formData.get('url');
+    const feedUrl = formData.get('url');
 
-    validate(urlStr)
+    schema.notOneOf(state.links).validate(feedUrl)
       .then((url) => loader(url, watchedState))
       .then(() => update(watchedState, delay))
       .catch((error) => {
-        const currentError = error;
-        if (currentError.name === 'ValidationError') {
-          currentError.isParsingError = true;
+        const { type } = error;
+        if (type === 'url') {
+          error.isParsingError = true;
         }
-        const errorMessage = generateErrorMessage(currentError);
+        if (type === 'notOneOf') {
+          error.isAlreadyExists = true;
+        }
+        const errorMessage = generateErrorMessage(error);
         watchedState.process = 'failing';
         watchedState.valid = false;
         watchedState.currentError = errorMessage;
@@ -104,7 +95,7 @@ export default () => {
 
   elements.postsList.addEventListener('click', (event) => {
     const { target } = event;
-    if (target.tagName === 'BUTTON') {
+    if (target.dataset.bsToggle === 'modal') {
       const { id } = target.dataset;
       watchedState.ui.readPosts.add(id);
       watchedState.modal.id = id;

@@ -8,8 +8,7 @@ const update = (state, delay) => {
   setTimeout(() => {
     Promise.all(
       state.links.map((url) => (
-        Promise.resolve(url)
-          .then((link) => axios.get(createUrl(link)))
+        axios.get(createUrl(url))
           .then((response) => {
             const { posts } = parser(response.data.contents);
             const newPosts = differenceBy(posts, state.posts, 'title');

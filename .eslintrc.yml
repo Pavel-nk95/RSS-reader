@@ -26,3 +26,4 @@ rules:
   import/extensions: 0
   no-underscore-dangle: 0
   ban-ts-comment: 0
+  no-param-reassign: 0
