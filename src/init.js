@@ -6,7 +6,6 @@ import render from './view.js';
 import findNodes from './nodes.js';
 import loader from './loader.js';
 import update from './update.js';
-import { takeRight } from 'lodash';
 
 const delay = 5000;
 
@@ -51,13 +50,13 @@ export default () => {
       isParsingError: 'mustBeValid',
       isNetworkError: 'networkError',
       default: 'unspecific',
-    }
-    const currentError = Object.entries(map).find(([key, value]) => (error[key]));
-    if (!currentError) {
+    };
+    const currentKey = Object.keys(map).find((key) => (error[key]));
+    if (!currentKey) {
       return map.default;
     }
-    const name = takeRight(currentError);
-    return name;
+    const currentErrorName = map[currentKey];
+    return currentErrorName;
   };
 
   nodes.form.addEventListener('submit', (e) => {
