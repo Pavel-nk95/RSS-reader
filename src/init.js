@@ -3,9 +3,10 @@ import i18next from 'i18next';
 import * as yup from 'yup';
 import ru from './locales/ru.js';
 import render from './view.js';
-import findDOMItems from './nodes.js';
+import findNodes from './nodes.js';
 import loader from './loader.js';
 import update from './update.js';
+import { takeRight } from 'lodash';
 
 const delay = 5000;
 
@@ -20,22 +21,13 @@ export default () => {
     },
   });
 
-  const elements = findDOMItems();
-
-  elements.title.textContent = i18nInstance.t('static.title');
-  elements.description.textContent = i18nInstance.t('static.description');
-  elements.add.textContent = i18nInstance.t('buttons.add');
-  elements.example.textContent = i18nInstance.t('static.example');
-  elements.footerContent.textContent = i18nInstance.t('static.footerContent');
-  elements.input.setAttribute(
-    'placeholder',
-    i18nInstance.t('static.placeholder'),
-  );
-  elements.postsTitle.textContent = i18nInstance.t('static.posts');
-  elements.feedsTitle.textContent = i18nInstance.t('static.feeds');
+  const nodes = findNodes(i18nInstance);
 
   const state = {
-    process: 'filling',
+    form: {
+      state: 'process',
+      errorName: '',
+    },
     modal: {
       id: null,
       state: false,
@@ -43,34 +35,32 @@ export default () => {
     links: [],
     feeds: [],
     posts: [],
-    valid: false,
-    currentError: '',
     ui: {
       readPosts: new Set(),
     },
   };
 
-  const watchedState = onChange(state, render(elements, i18nInstance, state));
+  const watchedState = onChange(state, render(nodes, i18nInstance, state));
 
   const schema = yup.string().url();
 
-  const generateErrorMessage = (error) => {
-    if (error.isAlreadyExists) {
-      return i18nInstance.t('errors.alreadyExists');
+  const findCurrentErrorName = (error) => {
+    const map = {
+      isAlreadyExists: 'alreadyExists',
+      isNotContainValid: 'notContainValid',
+      isParsingError: 'mustBeValid',
+      isNetworkError: 'networkError',
+      default: 'unspecific',
     }
-    if (error.isNotContainValid) {
-      return i18nInstance.t('errors.notContainValid');
+    const currentError = Object.entries(map).find(([key, value]) => (error[key]));
+    if (!currentError) {
+      return map.default;
     }
-    if (error.isParsingError) {
-      return i18nInstance.t('errors.mustBeValid');
-    }
-    if (error.networkError) {
-      return i18nInstance.t('errors.networkError');
-    }
-    return i18nInstance.t('errors.unspecific');
+    const name = takeRight(currentError);
+    return name;
   };
 
-  elements.form.addEventListener('submit', (e) => {
+  nodes.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const feedUrl = formData.get('url');
@@ -81,20 +71,19 @@ export default () => {
       .catch((error) => {
         const currentError = { ...error };
         const { type } = currentError;
-        if (type === 'url') {
-          currentError.isParsingError = true;
-        }
         if (type === 'notOneOf') {
           currentError.isAlreadyExists = true;
         }
-        const errorMessage = generateErrorMessage(currentError);
-        watchedState.process = 'failing';
-        watchedState.valid = false;
-        watchedState.currentError = errorMessage;
+        if (type === 'url') {
+          currentError.isParsingError = true;
+        }
+        const errorName = findCurrentErrorName(currentError);
+        watchedState.form.state = 'failing';
+        watchedState.form.errorName = errorName;
       });
   });
 
-  elements.postsList.addEventListener('click', (event) => {
+  nodes.postsList.addEventListener('click', (event) => {
     const { target } = event;
     if (target.dataset.bsToggle === 'modal') {
       const { id } = target.dataset;
@@ -104,7 +93,7 @@ export default () => {
     }
   });
 
-  elements.modal.addEventListener('click', (event) => {
+  nodes.modal.addEventListener('click', (event) => {
     const { target } = event;
     if (target.dataset.bsDismiss === 'modal') {
       watchedState.modal.state = false;

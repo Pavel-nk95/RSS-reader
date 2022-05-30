@@ -6,7 +6,7 @@ import createUrl from './createUrl.js';
 const { CancelToken } = axios;
 const source = CancelToken.source();
 const loader = (url, state) => {
-  state.process = 'sending';
+  state.form.state = 'sending';
   return axios
     .get(createUrl(url), {
       cancelToken: source.token,
@@ -14,20 +14,16 @@ const loader = (url, state) => {
     })
     .then((response) => {
       const { feed, posts } = parser(response.data.contents);
-      state.valid = true;
       state.links.push(url);
       state.feeds.push(feed);
       state.posts.push(...posts);
-      state.error = '';
-      state.process = 'filling';
-    }).catch((err) => {
-      const error = new Error();
-      if (err.request || err.response) {
-        error.networkError = true;
-      } else {
-        error.isNotContainValid = true;
+      state.form.state = 'filling';
+    }).catch((error) => {
+      const currentError = { ...error };
+      if (error.isAxiosError) {
+        currentError.isNetworkError = true;
       }
-      throw error;
+      throw currentError;
     });
 };
 

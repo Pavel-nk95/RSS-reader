@@ -1,5 +1,5 @@
-const findDOMItems = () => (
-  {
+const findNodes = (i18nInstance) => {
+  const nodes = {
     container: document.querySelector('div.d-flex'),
     form: document.querySelector('.rss-form'),
     input: document.getElementById('url-input'),
@@ -20,7 +20,21 @@ const findDOMItems = () => (
     modalDescription: document.querySelector('.modal-body'),
     modalBtnClose: document.querySelector('.close'),
     modalBtnReadAll: document.querySelector('.read-all'),
-  }
-);
+  };
 
-export default findDOMItems;
+  nodes.title.textContent = i18nInstance.t('static.title');
+  nodes.description.textContent = i18nInstance.t('static.description');
+  nodes.add.textContent = i18nInstance.t('buttons.add');
+  nodes.example.textContent = i18nInstance.t('static.example');
+  nodes.footerContent.textContent = i18nInstance.t('static.footerContent');
+  nodes.input.setAttribute(
+    'placeholder',
+    i18nInstance.t('static.placeholder'),
+  );
+  nodes.postsTitle.textContent = i18nInstance.t('static.posts');
+  nodes.feedsTitle.textContent = i18nInstance.t('static.feeds');
+
+  return nodes;
+};
+
+export default findNodes;

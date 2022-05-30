@@ -15,6 +15,12 @@ const generateData = (node, feedId) => {
 const parser = (content) => {
   const domParser = new DOMParser();
   const data = domParser.parseFromString(content, 'application/xml');
+  const error = data.querySelector('parsererror');
+  if (error) {
+    const currentError = new Error();
+    currentError.isNotContainValid = true;
+    throw currentError;
+  }
   const channel = data.querySelector('channel');
   const items = Array.from(channel.querySelectorAll('item'));
   const feedId = +uniqueId();

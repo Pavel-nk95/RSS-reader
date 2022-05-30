@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
-const renderFeeds = (data, elements) => {
-  const list = elements.feedsList;
+const renderFeeds = (data, nodes) => {
+  const list = nodes.feedsList;
   list.innerHTML = '';
   data.forEach((item) => {
     const li = document.createElement('li');
@@ -17,8 +17,8 @@ const renderFeeds = (data, elements) => {
   });
 };
 
-const renderPosts = (data, elements, i18nInstance, readPosts) => {
-  const list = elements.postsList;
+const renderPosts = (data, nodes, i18nInstance, readPosts) => {
+  const list = nodes.postsList;
   list.innerHTML = '';
   data.forEach((item) => {
     const li = document.createElement('li');
@@ -56,13 +56,13 @@ const renderPosts = (data, elements, i18nInstance, readPosts) => {
   });
 };
 
-const renderModal = (elements, i18nInstance, { title, description, link }) => {
+const renderModal = (nodes, i18nInstance, { title, description, link }) => {
   const {
     modalTitle,
     modalDescription,
     modalBtnClose,
     modalBtnReadAll,
-  } = elements;
+  } = nodes;
   modalTitle.textContent = title;
   modalDescription.innerHTML = description;
   modalBtnClose.textContent = i18nInstance.t('buttons.close');
@@ -70,54 +70,50 @@ const renderModal = (elements, i18nInstance, { title, description, link }) => {
   modalBtnReadAll.textContent = i18nInstance.t('buttons.readAll');
 };
 
-const render = (elements, i18nInstance, state) => (path, value) => {
-  if (path === 'valid' && value) {
-    elements.message.textContent = i18nInstance.t('messages.correct');
-    elements.message.classList.remove('text-danger');
-    elements.input.classList.remove('is-invalid');
-    elements.message.classList.add('text-success');
-    elements.content.classList.remove('visually-hidden');
-  }
-
+const render = (nodes, i18nInstance, state) => (path, value) => {
   if (path === 'feeds') {
-    renderFeeds(value, elements);
+    renderFeeds(value, nodes);
   }
 
   if (path === 'posts') {
-    renderPosts(value, elements, i18nInstance, state.ui.readPosts);
+    renderPosts(value, nodes, i18nInstance, state.ui.readPosts);
   }
 
-  if (path === 'process' && value === 'filling') {
-    elements.message.textContent = i18nInstance.t('messages.correct');
-    elements.form.reset();
-    elements.input.focus();
-    elements.input.removeAttribute('readonly');
-    elements.add.disabled = false;
-    elements.input.value = '';
+  if (path === 'form.state' && value === 'filling') {
+    nodes.message.textContent = i18nInstance.t('messages.correct');
+    nodes.form.reset();
+    nodes.input.focus();
+    nodes.input.removeAttribute('readonly');
+    nodes.add.disabled = false;
+    nodes.message.classList.remove('text-danger');
+    nodes.content.classList.remove('visually-hidden');
+    nodes.input.classList.remove('is-invalid');
+    nodes.message.classList.add('text-success');
+    nodes.input.value = '';
   }
 
-  if (path === 'process' && value === 'failing') {
-    elements.add.disabled = false;
-    elements.input.removeAttribute('readonly');
-    elements.input.focus();
-    elements.input.classList.add('is-invalid');
-    elements.message.classList.remove('text-success');
-    elements.message.classList.add('text-danger');
+  if (path === 'form.state' && value === 'failing') {
+    nodes.add.disabled = false;
+    nodes.input.removeAttribute('readonly');
+    nodes.input.focus();
+    nodes.input.classList.add('is-invalid');
+    nodes.message.classList.remove('text-success');
+    nodes.message.classList.add('text-danger');
   }
 
-  if (path === 'process' && value === 'sending') {
-    elements.add.disabled = true;
-    elements.input.setAttribute('readonly', true);
+  if (path === 'form.state' && value === 'sending') {
+    nodes.add.disabled = true;
+    nodes.input.setAttribute('readonly', true);
   }
 
-  if (path === 'currentError' && value !== '') {
-    elements.message.textContent = value;
+  if (path === 'form.errorName') {
+    nodes.message.textContent = i18nInstance.t(`errors.${value}`);
   }
 
   if (path === 'ui.readPosts') {
     const items = Array.from(value);
     const currentID = items[items.length - 1];
-    const currentLink = elements.postsList.querySelector(
+    const currentLink = nodes.postsList.querySelector(
       `[data-id="${currentID}"]`,
     ).previousElementSibling;
     currentLink.classList.remove('fw-bold');
@@ -129,7 +125,7 @@ const render = (elements, i18nInstance, state) => (path, value) => {
     const [currentPost] = state.posts.filter(
       ({ id }) => (id === +state.modal.id),
     );
-    renderModal(elements, i18nInstance, currentPost);
+    renderModal(nodes, i18nInstance, currentPost);
   }
 };
 
